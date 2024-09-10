@@ -3,6 +3,9 @@ http:
     block-ips:
       ipWhiteList:
         sourceRange:
+          - "0.0.0.0/0" # Allow all IPv4 addresses
+          - "::/0" # Allow all IPv6 addresses
+        excludedIPs:
           - "1.44.96.0/24"
           - "100.20.0.0/14"
           - "100.24.0.0/13"
