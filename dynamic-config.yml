@@ -12268,4 +12268,3 @@ http:
           - "99.78.238.251"
           - "99.78.238.253"
           - "99.78.238.255"
-        block: true # Block listed IPs instead of whitelisting
