@@ -26,6 +26,7 @@ services:
     command:
       - "--api.insecure=false" # Disable in production or secure with authentication
       - "--providers.docker=true"
+      - "--providers.file.filename=/dynamic-config.yml" # Load the dynamic configuration file
       - "--entrypoints.web.address=:80"
       - "--entrypoints.websecure.address=:443"
       - "--certificatesresolvers.le.acme.tlschallenge=true"
@@ -40,6 +41,7 @@ services:
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
       - "./letsencrypt:/letsencrypt"
+      - "./dynamic-config.yml:/dynamic-config.yml" # Mount the dynamic config file
     networks:
       - web
 
