@@ -22,7 +22,6 @@ services:
       - "traefik.docker.network=web"
     networks:
       - web
-      - internal
 
   traefik:
     image: traefik:v2.11
@@ -47,6 +46,4 @@ services:
 
 networks:
   web:
-    external: true
-  internal:
     driver: bridge
