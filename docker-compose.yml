@@ -1,0 +1,52 @@
+version: "3.8"
+
+services:
+  gophish:
+    build: .
+    container_name: gophish
+    restart: unless-stopped
+    ports:
+      - "${GOPHISH_ADMIN_PORT}:3333" # Expose Gophish admin panel directly
+    expose:
+      - "8080" # Gophish internal HTTP service to be proxied by Traefik
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.gophish.rule=Host(`${DOMAIN}`)" # Read domain from .env file
+      - "traefik.http.routers.gophish.entrypoints=websecure"
+      - "traefik.http.routers.gophish.tls=true"
+      - "traefik.http.routers.gophish.tls.certresolver=le" # Let's Encrypt certificate resolver
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+      - "traefik.http.routers.gophish.middlewares=redirect-to-https"
+      - "traefik.http.services.gophish.loadbalancer.server.port=8080" # Internal Gophish port to be proxied
+      - "traefik.http.routers.gophish.service=gophish"
+      - "traefik.docker.network=web"
+    networks:
+      - web
+      - internal
+
+  traefik:
+    image: traefik:v2.11
+    container_name: traefik
+    command:
+      - "--api.insecure=false" # Disable in production or secure with authentication
+      - "--providers.docker=true"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.le.acme.tlschallenge=true"
+      - "--certificatesresolvers.le.acme.email=${EMAIL}" # Read email from .env file
+      - "--certificatesresolvers.le.acme.storage=/letsencrypt/acme.json"
+      - "--entrypoints.websecure.forwardedheaders.trustedips=0.0.0.0/0"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "./letsencrypt:/letsencrypt"
+    networks:
+      - web
+
+networks:
+  web:
+    external: true
+  internal:
+    driver: bridge
