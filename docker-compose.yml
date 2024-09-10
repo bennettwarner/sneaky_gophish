@@ -15,11 +15,8 @@ services:
       - "traefik.http.routers.gophish.entrypoints=websecure"
       - "traefik.http.routers.gophish.tls=true"
       - "traefik.http.routers.gophish.tls.certresolver=le" # Let's Encrypt certificate resolver
-      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
-      - "traefik.http.routers.gophish.middlewares=redirect-to-https"
       - "traefik.http.services.gophish.loadbalancer.server.port=8080" # Internal Gophish port to be proxied
       - "traefik.http.routers.gophish.service=gophish"
-      - "traefik.docker.network=web"
     networks:
       - web
 
@@ -34,7 +31,9 @@ services:
       - "--certificatesresolvers.le.acme.tlschallenge=true"
       - "--certificatesresolvers.le.acme.email=${EMAIL}" # Read email from .env file
       - "--certificatesresolvers.le.acme.storage=/letsencrypt/acme.json"
-      - "--entrypoints.websecure.forwardedheaders.trustedips=0.0.0.0/0"
+      - "--entrypoints.web.http.redirections.entryPoint.to=websecure" # Redirect HTTP to HTTPS
+      - "--entrypoints.web.http.redirections.entryPoint.scheme=https" # Force HTTPS scheme
+      - "--entrypoints.web.http.redirections.entrypoint.permanent=true" # Permanent redirection (301)
     ports:
       - "80:80"
       - "443:443"
